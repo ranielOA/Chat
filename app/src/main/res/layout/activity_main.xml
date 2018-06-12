@@ -9,13 +9,13 @@
         android:id="@+id/main_listview_conversa"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/main_imagem"
+        app:layout_constraintBottom_toTopOf="@+id/main_avatar_usuario"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        android:id="@+id/main_imagem"
+        android:id="@+id/main_avatar_usuario"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:contentDescription="imagem da pessoa"
@@ -28,11 +28,11 @@
         android:layout_height="0dp"
         android:hint="mensagem"
         android:inputType="text"
-        app:layout_constraintBottom_toBottomOf="@+id/main_imagem"
+        app:layout_constraintBottom_toBottomOf="@+id/main_avatar_usuario"
         app:layout_constraintEnd_toStartOf="@+id/main_enviar"
         app:layout_constraintHorizontal_weight="2"
-        app:layout_constraintStart_toEndOf="@+id/main_imagem"
-        app:layout_constraintTop_toTopOf="@+id/main_imagem" />
+        app:layout_constraintStart_toEndOf="@+id/main_avatar_usuario"
+        app:layout_constraintTop_toTopOf="@+id/main_avatar_usuario" />
 
     <Button
         android:id="@+id/main_enviar"

@@ -5,7 +5,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
+
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
     Button botaoEnviar;
     @BindView(R.id.main_listview_conversa)
     ListView lvListaDeMensagens;
+    @BindView(R.id.main_avatar_usuario)
+    ImageView avatar;
 
     private int idDoUsuario = 2;
     private List<Mensagem> mensagens;
@@ -58,11 +63,13 @@ public class MainActivity extends AppCompatActivity {
         component = app.getComponent();
         component.inject(this);
 
+        Picasso.get().load("https://api.adorable.io/avatars/285/" + idDoUsuario + ".png").into(avatar);
+
         ouvirMensagem();
     }
 
     @OnClick(R.id.main_enviar)
-    public void enviarMensagem(){
+    public void enviarMensagem() {
         Mensagem msg = new Mensagem(campoConteudoMensagem.getText().toString(), idDoUsuario);
         chatService.enviar(msg).enqueue(new EnviarMensagemCallback());
     }
