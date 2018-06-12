@@ -4,6 +4,7 @@ import android.app.Application;
 
 import br.com.raniel.chat.component.ChatComponent;
 import br.com.raniel.chat.component.DaggerChatComponent;
+import br.com.raniel.chat.module.ChatModule;
 
 public class ChatApplication extends Application {
 
@@ -12,7 +13,9 @@ public class ChatApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        component = DaggerChatComponent.builder().build();
+        component = DaggerChatComponent.builder()
+                                        .chatModule(new ChatModule(this))
+                                        .build();
     }
 
     public ChatComponent getComponent(){

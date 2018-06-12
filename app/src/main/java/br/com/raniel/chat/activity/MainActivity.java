@@ -45,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Inject
     public ChatService chatService;
+    @Inject
+    public Picasso picasso;
 
     private ChatComponent component;
 
@@ -63,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         component = app.getComponent();
         component.inject(this);
 
-        Picasso.get().load("https://api.adorable.io/avatars/285/" + idDoUsuario + ".png").into(avatar);
+        picasso.get().load("https://api.adorable.io/avatars/285/" + idDoUsuario + ".png").into(avatar);
 
         ouvirMensagem();
     }

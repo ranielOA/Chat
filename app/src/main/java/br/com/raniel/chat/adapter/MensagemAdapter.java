@@ -13,6 +13,8 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
+import javax.inject.Inject;
+
 import br.com.raniel.chat.R;
 import br.com.raniel.chat.model.Mensagem;
 import butterknife.BindView;
@@ -27,6 +29,8 @@ public class MensagemAdapter extends BaseAdapter {
     TextView txtmensagem;
     @BindView(R.id.item_mensagem_avatar)
     ImageView avatar;
+    @Inject
+    Picasso picasso;
 
     public MensagemAdapter(Context context, List<Mensagem> mensagens, int idDoUsuario) {
         this.context = context;
@@ -62,7 +66,7 @@ public class MensagemAdapter extends BaseAdapter {
         }
 
         txtmensagem.setText(mensagem.getTexto());
-        Picasso.get().load("https://api.adorable.io/avatars/285/" + mensagem.getId() + ".png").into(avatar);
+        picasso.get().load("https://api.adorable.io/avatars/285/" + mensagem.getId() + ".png").into(avatar);
 
         return viewMensagem;
     }

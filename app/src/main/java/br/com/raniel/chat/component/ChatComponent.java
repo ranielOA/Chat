@@ -1,6 +1,7 @@
 package br.com.raniel.chat.component;
 
 import br.com.raniel.chat.activity.MainActivity;
+import br.com.raniel.chat.adapter.MensagemAdapter;
 import br.com.raniel.chat.module.ChatModule;
 import dagger.Component;
 
@@ -8,4 +9,5 @@ import dagger.Component;
 public interface ChatComponent {
 
     void inject(MainActivity activity);
+    void inject(MensagemAdapter adapter);
 }
