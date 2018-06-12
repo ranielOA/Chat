@@ -1,5 +1,6 @@
 package br.com.raniel.chat.activity;
 
+import android.app.Application;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -10,10 +11,14 @@ import android.widget.ListView;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import br.com.raniel.chat.R;
 import br.com.raniel.chat.adapter.MensagemAdapter;
+import br.com.raniel.chat.app.ChatApplication;
 import br.com.raniel.chat.callback.EnviarMensagemCallback;
 import br.com.raniel.chat.callback.OuvirMensagemCallBack;
+import br.com.raniel.chat.component.ChatComponent;
 import br.com.raniel.chat.model.Mensagem;
 import br.com.raniel.chat.service.ChatService;
 import retrofit2.Call;
@@ -27,7 +32,10 @@ public class MainActivity extends AppCompatActivity {
     private int idDoUsuario = 2;
     private ListView lvListaDeMensagens;
     private List<Mensagem> mensagens;
-    private ChatService chatService;
+
+    @Inject
+    public ChatService chatService;
+    private ChatComponent component;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,18 +47,13 @@ public class MainActivity extends AppCompatActivity {
         campoConteudoMensagem = findViewById(R.id.main_mensagem);
 
         mensagens = new ArrayList<>();
-
         MensagemAdapter mensagemAdapter = new MensagemAdapter(this, mensagens, idDoUsuario);
-
         lvListaDeMensagens.setAdapter(mensagemAdapter);
 
-        Retrofit retrofit = new Retrofit.Builder()
-                            .baseUrl("http://192.168.0.14:8080/")
-                            .addConverterFactory(GsonConverterFactory.create())
-                            .build();
+        ChatApplication app = (ChatApplication) getApplication();
+        component = app.getComponent();
+        component.inject(this);
 
-
-        chatService = retrofit.create(ChatService.class);
         ouvirMensagem();
 
         botaoEnviar.setOnClickListener(new View.OnClickListener() {
