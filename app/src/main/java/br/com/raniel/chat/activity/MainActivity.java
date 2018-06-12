@@ -12,14 +12,19 @@ import java.util.List;
 
 import br.com.raniel.chat.R;
 import br.com.raniel.chat.adapter.MensagemAdapter;
+import br.com.raniel.chat.callback.EnviarMensagemCallback;
+import br.com.raniel.chat.callback.OuvirMensagemCallBack;
 import br.com.raniel.chat.model.Mensagem;
 import br.com.raniel.chat.service.ChatService;
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
     private EditText campoConteudoMensagem;
     private Button botaoEnviar;
-    private int idDoUsuario = 1;
+    private int idDoUsuario = 2;
     private ListView lvListaDeMensagens;
     private List<Mensagem> mensagens;
     private ChatService chatService;
@@ -39,22 +44,32 @@ public class MainActivity extends AppCompatActivity {
 
         lvListaDeMensagens.setAdapter(mensagemAdapter);
 
+        Retrofit retrofit = new Retrofit.Builder()
+                            .baseUrl("http://192.168.0.14:8080/")
+                            .addConverterFactory(GsonConverterFactory.create())
+                            .build();
+
+
+        chatService = retrofit.create(ChatService.class);
+        ouvirMensagem();
+
         botaoEnviar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new ChatService(MainActivity.this).enviar(new Mensagem(campoConteudoMensagem.getText().toString(), idDoUsuario));
+                Mensagem msg = new Mensagem(campoConteudoMensagem.getText().toString(), idDoUsuario);
+                chatService.enviar(msg).enqueue(new EnviarMensagemCallback());
             }
         });
-
-        chatService = new ChatService(this);
-        chatService.ouvirMensagens();       //ouve as mensagens do servidor, a execução dessa thread fica travada no servidor até receber resposta
     }
 
     public void colocaNaLista(Mensagem mensagem) {
         mensagens.add(mensagem);
         MensagemAdapter adapter = new MensagemAdapter(this, mensagens, idDoUsuario);
         lvListaDeMensagens.setAdapter(adapter);
+    }
 
-        chatService.ouvirMensagens();   //coloca a thread para ficar escutando o servidor novamente
+    public void ouvirMensagem() {
+        Call<Mensagem> mensagemCall = chatService.ouvirMensagens();
+        mensagemCall.enqueue(new OuvirMensagemCallBack(this));
     }
 }
