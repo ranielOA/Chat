@@ -1,16 +1,20 @@
 package br.com.raniel.chat.callback;
 
+import org.greenrobot.eventbus.EventBus;
+
 import br.com.raniel.chat.activity.MainActivity;
+import br.com.raniel.chat.event.MensagemEvent;
+import br.com.raniel.chat.event.MessageFailureEvent;
 import br.com.raniel.chat.model.Mensagem;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class OuvirMensagemCallBack implements Callback<Mensagem> {
-    private MainActivity activity;
+    private EventBus eventBus;
 
-    public OuvirMensagemCallBack(MainActivity activity) {
-        this.activity = activity;
+    public OuvirMensagemCallBack(EventBus eventBus) {
+        this.eventBus = eventBus;
     }
 
     @Override
@@ -18,13 +22,12 @@ public class OuvirMensagemCallBack implements Callback<Mensagem> {
         if (response.isSuccessful()){
             Mensagem mensagem = response.body();
 
-            activity.colocaNaLista(mensagem);
-            activity.ouvirMensagem();
+            eventBus.post(new MensagemEvent(mensagem));
         }
     }
 
     @Override
     public void onFailure(Call<Mensagem> call, Throwable t) {
-            activity.ouvirMensagem();
+        eventBus.post(new MessageFailureEvent());
     }
 }

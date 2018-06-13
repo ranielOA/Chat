@@ -1,12 +1,17 @@
 package br.com.raniel.chat.activity;
 
-import android.app.Application;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
+
+import com.squareup.picasso.Picasso;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,22 +24,37 @@ import br.com.raniel.chat.app.ChatApplication;
 import br.com.raniel.chat.callback.EnviarMensagemCallback;
 import br.com.raniel.chat.callback.OuvirMensagemCallBack;
 import br.com.raniel.chat.component.ChatComponent;
+import br.com.raniel.chat.event.MensagemEvent;
+import br.com.raniel.chat.event.MessageFailureEvent;
 import br.com.raniel.chat.model.Mensagem;
 import br.com.raniel.chat.service.ChatService;
+import butterknife.BindView;
+import butterknife.BindViews;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 import retrofit2.Call;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
-    private EditText campoConteudoMensagem;
-    private Button botaoEnviar;
+    @BindView(R.id.main_mensagem)
+    EditText campoConteudoMensagem;
+    @BindView(R.id.main_enviar)
+    Button botaoEnviar;
+    @BindView(R.id.main_listview_conversa)
+    ListView lvListaDeMensagens;
+    @BindView(R.id.main_avatar_usuario)
+    ImageView avatar;
+
     private int idDoUsuario = 2;
-    private ListView lvListaDeMensagens;
     private List<Mensagem> mensagens;
 
     @Inject
     public ChatService chatService;
+    @Inject
+    public Picasso picasso;
+    @Inject
+    public EventBus eventbus;
+
     private ChatComponent component;
 
     @Override
@@ -42,9 +62,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        lvListaDeMensagens = findViewById(R.id.main_listview_conversa);
-        botaoEnviar = findViewById(R.id.main_enviar);
-        campoConteudoMensagem = findViewById(R.id.main_mensagem);
+        ButterKnife.bind(this);
 
         mensagens = new ArrayList<>();
         MensagemAdapter mensagemAdapter = new MensagemAdapter(this, mensagens, idDoUsuario);
@@ -54,25 +72,40 @@ public class MainActivity extends AppCompatActivity {
         component = app.getComponent();
         component.inject(this);
 
-        ouvirMensagem();
+        picasso.get().load("https://api.adorable.io/avatars/285/" + idDoUsuario + ".png").into(avatar);
 
-        botaoEnviar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Mensagem msg = new Mensagem(campoConteudoMensagem.getText().toString(), idDoUsuario);
-                chatService.enviar(msg).enqueue(new EnviarMensagemCallback());
-            }
-        });
+        eventbus.register(this);
+        ouvirMensagem(null);
     }
 
-    public void colocaNaLista(Mensagem mensagem) {
-        mensagens.add(mensagem);
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        eventbus.unregister(this);
+    }
+
+    @OnClick(R.id.main_enviar)
+    public void enviarMensagem() {
+        Mensagem msg = new Mensagem(campoConteudoMensagem.getText().toString(), idDoUsuario);
+        chatService.enviar(msg).enqueue(new EnviarMensagemCallback());
+    }
+
+    @Subscribe
+    public void colocaNaLista(MensagemEvent mensagemEvent) {
+        mensagens.add(mensagemEvent.mensagem);
         MensagemAdapter adapter = new MensagemAdapter(this, mensagens, idDoUsuario);
         lvListaDeMensagens.setAdapter(adapter);
     }
 
-    public void ouvirMensagem() {
+    @Subscribe
+    public void ouvirMensagem(MensagemEvent mensagemEvent) {
         Call<Mensagem> mensagemCall = chatService.ouvirMensagens();
-        mensagemCall.enqueue(new OuvirMensagemCallBack(this));
+        mensagemCall.enqueue(new OuvirMensagemCallBack(eventbus));
+    }
+
+    @Subscribe
+    public void lidarCom(MessageFailureEvent event){
+        ouvirMensagem(null);
     }
 }
