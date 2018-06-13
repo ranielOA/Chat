@@ -25,6 +25,7 @@ import br.com.raniel.chat.callback.EnviarMensagemCallback;
 import br.com.raniel.chat.callback.OuvirMensagemCallBack;
 import br.com.raniel.chat.component.ChatComponent;
 import br.com.raniel.chat.event.MensagemEvent;
+import br.com.raniel.chat.event.MessageFailureEvent;
 import br.com.raniel.chat.model.Mensagem;
 import br.com.raniel.chat.service.ChatService;
 import butterknife.BindView;
@@ -51,6 +52,8 @@ public class MainActivity extends AppCompatActivity {
     public ChatService chatService;
     @Inject
     public Picasso picasso;
+    @Inject
+    public EventBus eventbus;
 
     private ChatComponent component;
 
@@ -71,16 +74,15 @@ public class MainActivity extends AppCompatActivity {
 
         picasso.get().load("https://api.adorable.io/avatars/285/" + idDoUsuario + ".png").into(avatar);
 
-        ouvirMensagem(new MensagemEvent(null));
-
-        EventBus.getDefault().register(this);
+        eventbus.register(this);
+        ouvirMensagem(null);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
 
-        EventBus.getDefault().unregister(this);
+        eventbus.unregister(this);
     }
 
     @OnClick(R.id.main_enviar)
@@ -99,6 +101,11 @@ public class MainActivity extends AppCompatActivity {
     @Subscribe
     public void ouvirMensagem(MensagemEvent mensagemEvent) {
         Call<Mensagem> mensagemCall = chatService.ouvirMensagens();
-        mensagemCall.enqueue(new OuvirMensagemCallBack());
+        mensagemCall.enqueue(new OuvirMensagemCallBack(eventbus));
+    }
+
+    @Subscribe
+    public void lidarCom(MessageFailureEvent event){
+        ouvirMensagem(null);
     }
 }
