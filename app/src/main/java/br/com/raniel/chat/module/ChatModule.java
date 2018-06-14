@@ -1,6 +1,8 @@
 package br.com.raniel.chat.module;
 
 import android.app.Application;
+import android.content.Context;
+import android.view.inputmethod.InputMethodManager;
 
 import com.squareup.picasso.Picasso;
 
@@ -41,5 +43,12 @@ public class ChatModule {
     public Picasso picaso(){
         Picasso picasso = new Picasso.Builder(app).build();
         return picasso;
+    }
+
+    @Provides
+    public InputMethodManager getInputMethodManager(){
+        InputMethodManager inputMethodManager = (InputMethodManager) app.getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        return inputMethodManager;
     }
 }
