@@ -1,8 +1,11 @@
 package br.com.raniel.chat.activity;
 
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.support.annotation.MainThread;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -13,6 +16,7 @@ import com.squareup.picasso.Picasso;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
     public Picasso picasso;
     @Inject
     public EventBus eventbus;
+    @Inject
+    public InputMethodManager inputMethodManager;
 
     private ChatComponent component;
 
@@ -64,7 +70,11 @@ public class MainActivity extends AppCompatActivity {
 
         ButterKnife.bind(this);
 
-        mensagens = new ArrayList<>();
+        if (savedInstanceState != null)
+            mensagens = savedInstanceState.getParcelableArrayList("mensagem");
+        else
+            mensagens = new ArrayList<>();
+
         MensagemAdapter mensagemAdapter = new MensagemAdapter(this, mensagens, idDoUsuario);
         lvListaDeMensagens.setAdapter(mensagemAdapter);
 
@@ -85,10 +95,21 @@ public class MainActivity extends AppCompatActivity {
         eventbus.unregister(this);
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putParcelableArrayList("mensagem", (ArrayList<Mensagem>) mensagens);
+    }
+
     @OnClick(R.id.main_enviar)
     public void enviarMensagem() {
         Mensagem msg = new Mensagem(campoConteudoMensagem.getText().toString(), idDoUsuario);
         chatService.enviar(msg).enqueue(new EnviarMensagemCallback());
+
+        campoConteudoMensagem.getText().clear();
+        //InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(campoConteudoMensagem.getWindowToken(), 0);
     }
 
     @Subscribe
@@ -105,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Subscribe
-    public void lidarCom(MessageFailureEvent event){
+    public void lidarCom(MessageFailureEvent event) {
         ouvirMensagem(null);
     }
 }
